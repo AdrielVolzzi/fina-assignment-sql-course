@@ -1,3 +1,5 @@
+BY: Adriel Volzzi Sales
+
 Part 1: Yelp Dataset Profiling and Understanding
 
 1. Profile the data by finding the total number of records for each of the tables below:
@@ -388,41 +390,102 @@ Part 2: Inferences and Analysis
 1. Pick one city and category of your choice and group the businesses in that city or category by their overall star rating. Compare the businesses with 2-3 stars to the businesses with 4-5 stars and answer the following questions. Include your code.
 	
 i. Do the two groups you chose to analyze have a different distribution of hours?
-
+	All analyzed restaurants open and close at different times
 
 ii. Do the two groups you chose to analyze have a different number of reviews?
-         
+        Yes, restaurants with more stars have slightly more ratings
          
 iii. Are you able to infer anything from the location data provided between these two groups? Explain.
-
+	I can't infer anything since there's little data for restaurants in Toronto.
+	
 SQL code used for analysis:
 
+	SELECT B.name, B.review_count, B.neighborhood
+		,CASE
+			--WHEN B.stars BETWEEN 1.1 AND 2 THEN '1-2'
+			WHEN B.stars BETWEEN 2 AND 3 THEN '2-3'
+			--WHEN B.stars BETWEEN 3.1 AND 4 THEN '3-4'
+			WHEN B.stars BETWEEN 4 AND 5 THEN '4-5'
+			ELSE NULL
+		END class
+		,H.hours
+
+	FROM business B INNER JOIN category C 
+	ON B.id = C.business_id
+	INNER JOIN hours H
+	ON B.id = H.business_id
+
+	WHERE B.city = 'Toronto' and C.category = 'Restaurants'
+	GROUP BY B.name
+	ORDER BY class
 		
 		
 2. Group business based on the ones that are open and the ones that are closed. What differences can you find between the ones that are still open and the ones that are closed? List at least two differences and the SQL code you used to arrive at your answer.
 		
 i. Difference 1:
-         
+        The first difference is the number of reviews. Establishments that are closed received 4503, while those that are open received 32527.
          
 ii. Difference 2:
-         
-         
+       	The second difference is probably the reason for the first difference. The number of closed establishments is almost 5 times less than the open ones.
          
 SQL code used for analysis:
 
-	
+	SELECT is_open
+		,COUNT(distinct C.category), COUNT(distinct B.id)
+		,AVG(B.stars), SUM(B.review_count)
+	FROM business B INNER JOIN category C 
+	ON B.id = C.business_id
+	GROUP BY is_open
+
 	
 3. For this last part of your analysis, you are going to choose the type of analysis you want to conduct on the Yelp dataset and are going to prepare the data for analysis.
 
 Ideas for analysis include: Parsing out keywords and business attributes for sentiment analysis, clustering businesses to find commonalities or anomalies between them, predicting the overall star rating for a business, predicting the number of fans a user will have, and so on. These are just a few examples to get you started, so feel free to be creative and come up with your own problem you want to solve. Provide answers, in-line, to all of the following:
 	
 i. Indicate the type of analysis you chose to do:
-         
+
+	Identifying people's favorite places based on user reviews
          
 ii. Write 1-2 brief paragraphs on the type of data you will need for your analysis and why you chose that data:
+
+To identify people's favorite places, it is necessary to use data that allows for classification and comparison of establishments based on user reviews. In this sense, the category column of the category table is an important piece of information, as it indicates the category of the place being reviewed, such as restaurants, bars, hotels, and so on.
+
+In addition, it is crucial to use the funny, cool, useful, and stars columns of the reviews table to understand how users rate the establishments. The stars column indicates the overall rating given by users, while the funny, cool, and useful columns indicate the number of positive votes the reviews received in relation to these attributes. This way, it is possible to identify the places that are better reviewed by users and are therefore considered favorites.
                            
                   
 iii. Output of your finished dataset:
-         
+	+---------------------------+------------+----------------+-------------+------------+--------------+
+	| establishment_category    | star_class | average_rating | funny_votes | cool_votes | useful_votes |
+	+---------------------------+------------+----------------+-------------+------------+--------------+
+	| Food                      | 4 star     |  4.07692307692 |           3 |          3 |           10 |
+	| American (New)            | 4 star     |  4.21428571429 |           2 |          3 |            4 |
+	| American (Traditional)    | 4 star     |           4.05 |           0 |          1 |            6 |
+	| Barbeque                  | 4 star     |  4.42857142857 |           0 |          1 |            2 |
+	| Restaurants               | 3 star     |            3.8 |          12 |         23 |           53 |
+	| Bars                      | 3 star     |  3.73333333333 |           5 |          7 |           20 |
+	| Nightlife                 | 3 star     |  3.51515151515 |           5 |          7 |           20 |
+	| Breakfast & Brunch        | 3 star     |  3.47368421053 |           4 |          4 |           11 |
+	| Sandwiches                | 3 star     |  3.92857142857 |           3 |          5 |            7 |
+	| Event Planning & Services | 3 star     |            3.5 |           2 |          2 |            2 |
+	| Asian Fusion              | 3 star     |            3.6 |           1 |          3 |           11 |
+	| Seafood                   | 3 star     |  3.38461538462 |           1 |          2 |           10 |
+	| Japanese                  | 3 star     |         3.9375 |           0 |          1 |            2 |
+	+---------------------------+------------+----------------+-------------+------------+--------------+
          
 iv. Provide the SQL code you used to create your final dataset:
+SELECT 
+	C.category AS establishment_category
+	, AVG(R.stars) AS average_rating
+	, SUM(R.funny) AS funny_votes
+	, SUM(R.cool) AS cool_votes
+	, SUM(R.useful) AS useful_votes
+
+FROM review R
+INNER JOIN category C ON R.business_id = C.business_id
+
+GROUP BY C.category
+HAVING COUNT(R.stars) > 10
+ORDER BY average_rating DESC
+	--, funny_votes DESC
+	--, cool_votes DESC
+	--, useful_votes DESC;
