@@ -201,12 +201,12 @@ Note: Primary Keys are denoted in the ER-Diagram with a yellow key icon.
 		ORDER BY reviews desc;	
 	
 	Copy and Paste the Result Below:
-		+-----------------+--------+
-		| city               | reviews  |
+		+-----------------+---------+
+		| city            | reviews |
 		+-----------------+---------+
 		| Las Vegas       |    1561 |
 		| Phoenix         |    1001 |
-		| Toronto          |     985 |
+		| Toronto         |     985 |
 		| Scottsdale      |     497 |
 		| Charlotte       |     468 |
 		| Pittsburgh      |     353 |
